@@ -44,19 +44,21 @@ int main(int argc, char *argv[])
         char command[1024];
         char currentFilePath[32];
 
-        snprintf(currentFilePath, sizeof(currentFilePath), "%s_%d.pel", filename, part+1);
+        snprintf(currentFilePath, sizeof(currentFilePath), "%s_%d.pel", pelletname, part+1);
 
         printf("Current file path: %s\n",currentFilePath);
-        printf("Being brought from - %s@%s:%s \n",
+        printf("Being brought from - %s@%s:%s/%s \n",
             argv[2], //username
             argv[4+part], //host
-            argv[3]); //destination
+            argv[3],
+            pelletname); //destination
 
         snprintf(command, sizeof(command),
-             "scp %s@%s:%s %s",
+             "scp %s@%s:%s/%s %s",
              argv[2], //username
              argv[4+part], //host
              argv[3],
+             pelletname,
              currentFilePath); //sourcefile); //destination
         
         int result = system(command);
