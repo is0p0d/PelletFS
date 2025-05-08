@@ -59,8 +59,16 @@ int main(int argc, char *argv[])
         printf("Writing to Pellets...\n");
         for(int fileNum = 0; fileNum < nodecount; fileNum++)
         {
-            char partBuffer[16];
-            sprintf(partBuffer, "filepart_%d", fileNum);
+            char partBuffer[16]; // first 3 lines are metadata for the file:
+                                 // name, total parts, current part
+            //sprintf(partBuffer, "filepart_%d", fileNum);
+            //writeToFile(fileArray, fileNum+1, partBuffer);
+
+            writeToFile(fileArray,fileNum+1,filename);
+            sprintf(partBuffer, "%d", nodecount);
+            writeToFile(fileArray, fileNum+1, partBuffer);
+
+            sprintf(partBuffer, "%d", fileNum);
             writeToFile(fileArray, fileNum+1, partBuffer);
 
             if (fileNum != nodecount+1)
@@ -81,7 +89,7 @@ int main(int argc, char *argv[])
     fclose(file);
     closeAndFree(fileArray, nodecount);
 
-    for(int cmdNum = 0; cmdNum < nodecount; cmdNum++)
+    for(int cmdNum = 1; cmdNum < nodecount; cmdNum++)
     {
         char command[1024];
         char currentFilePath[32];
@@ -104,6 +112,12 @@ int main(int argc, char *argv[])
             int result = system(command);
             if (result == -1) {
                 fprintf(stderr, "SCP for file %s failed", currentFilePath);
+            }
+
+            snprintf(command, sizeof(command), "rm %s", currentFilePath);
+            result = system("rm");
+            if (result == -1) {
+                fprintf(stderr, "Remove for file %s failed", currentFilePath);
             }
     }
 
