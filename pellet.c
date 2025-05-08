@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         char command[1024];
         char currentFilePath[32];
 
-        snprintf(currentFilePath, sizeof(currentFilePath), "%s_%d.pel", filename, cmdNum);
+        snprintf(currentFilePath, sizeof(currentFilePath), "%s_%d.pel", filename, cmdNum+1);
 
         printf("Current file path: %s\n",currentFilePath);
         printf("Being sent to- %s@%s:%s \n",
@@ -109,18 +109,17 @@ int main(int argc, char *argv[])
              argv[5+cmdNum], //host
              argv[4]); //destination
         
-            int result = system(command);
-            if (result == -1) {
-                fprintf(stderr, "SCP for file %s failed", currentFilePath);
-            }
-
-            snprintf(command, sizeof(command), "rm %s", currentFilePath);
-            result = system("rm");
-            if (result == -1) {
-                fprintf(stderr, "Remove for file %s failed", currentFilePath);
-            }
+        int result = system(command);
+        if (result == -1) {
+            fprintf(stderr, "SCP for file %s failed", currentFilePath);
+        }
+        command[0]='\0';
+        snprintf(command, sizeof(command), "rm %s", currentFilePath);
+        result = system(command);
+        if (result == -1) {
+            fprintf(stderr, "Remove for file %s failed", currentFilePath);
+        }
     }
-
 
     return 0;
 }
