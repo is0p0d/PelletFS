@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     fclose(file);
     closeAndFree(fileArray, nodecount);
 
-    for(int cmdNum = 1; cmdNum < nodecount; cmdNum++)
+    for(int cmdNum = 0; cmdNum < nodecount-1; cmdNum++)
     {
         char command[1024];
         char currentFilePath[32];
