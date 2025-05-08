@@ -11,7 +11,7 @@ typedef struct {
 
 long findFileSize(FILE *file);
 FileInfo* fileArrayINIT(int num_files, char* filename);
-int writeToFile(FileInfo *file_array, int index, const char *content);
+int writeToFile(FileInfo *file_array, int index, char *content);
 void closeAndFree(FileInfo *file_array, int num_files);
 
 int main(int argc, char *argv[]) 
@@ -43,24 +43,49 @@ int main(int argc, char *argv[])
     // Print the file size.
     printf("File size of %s: %ld bytes\n", filename, file_size);
     printf("Individual pellet sizes: %ld bytes. Final pellet offset: %d bytes.\n", pellet_size, finalPelletOffset);
-    // Close the file.
-    fclose(file);
+    if (fseek(file, 0, SEEK_SET) != 0) { //rewind file
+        fprintf(stderr, "Error: Could not seek to the beginning of the input file.\n");
+        fclose(file);
+        return 1;
+    }
 
     FileInfo *fileArray = NULL;
     fileArray = fileArrayINIT(nodecount, filename);
 
+    char* buffer = (char*)malloc(pellet_size+finalPelletOffset);
+    if (buffer == NULL) {
+        fprintf(stderr, "Error: Could not allocate memory for the buffer.\n");
+        return 1;
+    }
+
     if (fileArray != NULL)
     {
+        long readSize = 0,
+             bytesRead = 0;
+
         printf("Writing to Pellets...\n");
         for(int fileNum = 0; fileNum < nodecount; fileNum++)
         {
-            writeToFile(fileArray, fileNum+1, "Test!");
+            char partBuffer[16];
+            sprintf(partBuffer, "filepart_%d", fileNum);
+            writeToFile(fileArray, fileNum+1, partBuffer);
+
+            if (fileNum != nodecount+1)
+            {
+                readSize = pellet_size;
+            } else {
+                readSize = pellet_size+finalPelletOffset;
+            }
+
+            bytesRead = fread(buffer, 1, readSize, file);
+            writeToFile(fileArray, fileNum+1, buffer);
         }
     } else {
         fprintf(stderr, "fileArray Empty.");
         return 1;
     }
 
+    fclose(file);
     closeAndFree(fileArray, nodecount);
     return 0;
 }
@@ -108,7 +133,7 @@ FileInfo* fileArrayINIT(int num_files, char* filename)
     for (int i = 0; i < num_files; i++) 
     {
         // Create a filename based on the loop index
-        snprintf(file_array[i].filename, MAX_FILENAME_LENGTH, "%s_%d.txt",filename, i + 1);
+        snprintf(file_array[i].filename, MAX_FILENAME_LENGTH, "%s_%d.pel",filename, i + 1);
 
         // Open the file in write mode ("w")
         file_array[i].file_ptr = fopen(file_array[i].filename, "w");
@@ -132,7 +157,8 @@ FileInfo* fileArrayINIT(int num_files, char* filename)
     printf("Successfully created and opened %d files.\n", num_files);
     return file_array; // Return the pointer to the array of file information
 }
-int writeToFile(FileInfo *file_array, int index, const char *content) 
+
+int writeToFile(FileInfo *file_array, int index, char *content) 
 {
     if (file_array == NULL) 
     {
@@ -158,6 +184,7 @@ int writeToFile(FileInfo *file_array, int index, const char *content)
         return -1; // Error: Invalid index
     }
 }
+
 void closeAndFree(FileInfo *file_array, int num_files)
 {
     if (file_array != NULL) 
