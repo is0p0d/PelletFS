@@ -16,16 +16,9 @@ void closeAndFree(FileInfo *file_array, int num_files);
 
 int main(int argc, char *argv[]) 
 {
+    printf("Usage: filename, nodecount, username, path, hosts1,..,hostsn\n");
     FILE *file;
     long file_size;
-
-    // Check if the filename is provided as a command-line argument.
-    if (argc != 3) 
-    {
-        fprintf(stderr, "Usage: %s <filename> <nodecount>\n", argv[0]);
-        return 1;
-    }
-
     char *filename = argv[1];
     int nodecount = atoi(argv[2]);
 
@@ -87,6 +80,34 @@ int main(int argc, char *argv[])
 
     fclose(file);
     closeAndFree(fileArray, nodecount);
+
+    for(int cmdNum = 0; cmdNum < nodecount; cmdNum++)
+    {
+        char command[1024];
+        char currentFilePath[32];
+
+        snprintf(currentFilePath, sizeof(currentFilePath), "%s_%d.pel", filename, cmdNum);
+
+        printf("Current file path: %s\n",currentFilePath);
+        printf("Being sent to- %s@%s:%s \n",
+            argv[3], //username
+            argv[5+cmdNum], //host
+            argv[4]); //destination
+
+        snprintf(command, sizeof(command),
+             "scp %s %s@%s:%s",
+             currentFilePath, //sourcefile
+             argv[3], //username
+             argv[5+cmdNum], //host
+             argv[4]); //destination
+        
+            int result = system(command);
+            if (result == -1) {
+                fprintf(stderr, "SCP for file %s failed", currentFilePath);
+            }
+    }
+
+
     return 0;
 }
 
@@ -133,7 +154,7 @@ FileInfo* fileArrayINIT(int num_files, char* filename)
     for (int i = 0; i < num_files; i++) 
     {
         // Create a filename based on the loop index
-        snprintf(file_array[i].filename, MAX_FILENAME_LENGTH, "%s_%d.pel",filename, i + 1);
+        snprintf(file_array[i].filename, MAX_FILENAME_LENGTH, "%s_%d.pel",filename, i);
 
         // Open the file in write mode ("w")
         file_array[i].file_ptr = fopen(file_array[i].filename, "w");
