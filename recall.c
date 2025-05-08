@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
             argv[2], //username
             argv[4+part], //host
             argv[3],
-            pelletname); //destination
+            currentFilePath); //destination
 
         snprintf(command, sizeof(command),
              "scp %s@%s:%s%s %s",
              argv[2], //username
              argv[4+part], //host
              argv[3],
-             pelletname,
+             currentFilePath,
              currentFilePath); //sourcefile); //destination
         
         int result = system(command);
